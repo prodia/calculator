@@ -12,6 +12,10 @@ func multiply(op1: Double, op2: Double) -> Double {
     return op1 * op2
 }
 
+func random() -> Double {
+    return drand48()
+}
+
 class CalculatorBrain {
     
     private var accumulator = 0.0
@@ -21,11 +25,15 @@ class CalculatorBrain {
         "e": Operation.Constant(M_E),
         "√": Operation.UnaryOperation(sqrt),
         "cos": Operation.UnaryOperation(cos),
+        "sin": Operation.UnaryOperation(sin),
+        "tan": Operation.UnaryOperation(tan),
+        "log10": Operation.UnaryOperation(log10),
         "×": Operation.BinaryOperation({ $0 * $1 }),
         "−": Operation.BinaryOperation({ $0 - $1 }),
         "÷": Operation.BinaryOperation({ $0 / $1 }),
         "+": Operation.BinaryOperation({ $0 + $1 }),
-        "=": Operation.Equals
+        "=": Operation.Equals,
+        "c": Operation.Clear
     ]
     
     private enum Operation {
@@ -33,6 +41,7 @@ class CalculatorBrain {
         case UnaryOperation((Double) -> Double)
         case BinaryOperation((Double, Double) -> Double)
         case Equals
+        case Clear
     }
     
     func setOperand(operand: Double) {
@@ -51,6 +60,8 @@ class CalculatorBrain {
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
             case .Equals:
                 executePendingBinaryOperation()
+            case .Clear:
+                clear()
             }
         }
     }
@@ -62,13 +73,18 @@ class CalculatorBrain {
         }
     }
     
+    private func clear() {
+        accumulator = 0
+        pending = nil
+    }
+
     private var pending: PendingBinaryOperationInfo?
     
     private struct PendingBinaryOperationInfo {
         var binaryFunction: (Double, Double) -> Double
         var firstOperand: Double
     }
-    
+
     // Only a get makes this a read-only property
     var result: Double {
         get {

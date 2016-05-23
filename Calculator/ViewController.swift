@@ -28,16 +28,16 @@ class ViewController: UIViewController {
     @IBAction private func touchDigit(sender: UIButton) {
         let digit = sender.currentTitle!
         
-        if (display.text!.rangeOfString(DECIMAL_CHAR) == nil || digit != DECIMAL_CHAR) {
-            if userIsInTheMiddleOfTyping {
-                let textCurrentlyInDisplay = display.text!
+        if userIsInTheMiddleOfTyping {
+            let textCurrentlyInDisplay = display.text!
+            if digit != DECIMAL_CHAR || display.text!.rangeOfString(DECIMAL_CHAR) == nil {
                 display.text = textCurrentlyInDisplay + digit
+            }
+        } else {
+            if digit == DECIMAL_CHAR {
+                display.text = "0\(digit)"
             } else {
-                if digit == DECIMAL_CHAR {
-                    display.text = "0\(digit)"
-                } else {
-                    display.text = digit
-                }
+                display.text = digit
             }
         }
         
