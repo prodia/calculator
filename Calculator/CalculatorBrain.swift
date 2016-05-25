@@ -17,9 +17,13 @@ func random() -> Double {
 }
 
 class CalculatorBrain {
-    
+
     private var accumulator = 0.0
-    
+    private var history: [String] = []
+    private var lastOperation :LastOperation = .Clear
+
+    private let dotdotdot: String = " ..."
+
     private let operations: Dictionary<String, Operation> = [
         "π": Operation.Constant(M_PI),
         "e": Operation.Constant(M_E),
@@ -35,7 +39,7 @@ class CalculatorBrain {
         "=": Operation.Equals,
         "c": Operation.Clear
     ]
-    
+
     private enum Operation {
         case Constant(Double)
         case UnaryOperation((Double) -> Double)
@@ -43,52 +47,111 @@ class CalculatorBrain {
         case Equals
         case Clear
     }
-    
-    func setOperand(operand: Double) {
-        accumulator = operand
+
+    private enum LastOperation {
+        case Digit
+        case Constant
+        case UnaryOperation
+        case BinaryOperation
+        case Equals
+        case Clear
     }
-    
+
+    func setOperand(operand: Double) {
+        if lastOperation == .UnaryOperation {
+            history.removeAll()
+        }
+
+        accumulator = operand
+        history.append(String(operand))
+        lastOperation = .Digit
+    }
+
     func performOperand(symbol: String) {
         if let operation = operations[symbol] {
             switch operation {
             case .Constant(let value):
+                history.append(symbol)
                 accumulator = value
+                lastOperation = .Constant
             case .UnaryOperation(let function):
+                wrapWithParens(symbol)
                 accumulator = function(accumulator)
+                lastOperation = .UnaryOperation
             case .BinaryOperation(let function):
+                if lastOperation == .Equals {
+                    history.removeLast()
+                }
+                history.append(symbol)
                 executePendingBinaryOperation()
                 pending = PendingBinaryOperationInfo(binaryFunction: function, firstOperand: accumulator)
+                lastOperation = .BinaryOperation
             case .Equals:
+                if lastOperation == .BinaryOperation {
+                    history.append(String(accumulator))
+                }
+                history.append(symbol)
                 executePendingBinaryOperation()
+                lastOperation = .Equals
             case .Clear:
                 clear()
+                lastOperation = .Clear
             }
         }
     }
-    
+
+    var result: Double {
+        get {
+            return accumulator;
+        }
+    }
+
+    var isPartialResult: Bool {
+        get {
+            return pending != nil
+        }
+    }
+
+    var description: String {
+        get {
+            if pending != nil {
+                return history.joinWithSeparator(" ") + dotdotdot
+            }
+
+            return history.joinWithSeparator(" ")
+        }
+    }
+
+    private func wrapWithParens(symbol: String) {
+        if lastOperation == .Equals {
+            history.insert(")", atIndex: history.count - 1)
+            history.insert(symbol, atIndex: 0)
+            history.insert("(", atIndex: 1)
+        } else {
+            history.insert(symbol, atIndex: history.count - 1)
+            history.insert("(", atIndex: history.count - 1)
+            history.insert(")", atIndex: history.count)
+        }
+    }
+
     private func executePendingBinaryOperation() {
         if pending != nil {
             accumulator = pending!.binaryFunction(pending!.firstOperand, accumulator)
             pending = nil
         }
     }
-    
+
     private func clear() {
         accumulator = 0
         pending = nil
+        history.removeAll()
+        lastOperation = .Clear
     }
 
     private var pending: PendingBinaryOperationInfo?
-    
+
     private struct PendingBinaryOperationInfo {
         var binaryFunction: (Double, Double) -> Double
         var firstOperand: Double
-    }
-
-    // Only a get makes this a read-only property
-    var result: Double {
-        get {
-            return accumulator;
-        }
     }
 }

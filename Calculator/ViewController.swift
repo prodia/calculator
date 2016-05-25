@@ -22,6 +22,8 @@ class ViewController: UIViewController {
     
     @IBOutlet private weak var display: UILabel!
     
+    @IBOutlet private weak var descriptionLabel: UILabel!
+
     private var userIsInTheMiddleOfTyping = false
     private let DECIMAL_CHAR = "."
     
@@ -67,6 +69,8 @@ class ViewController: UIViewController {
         }
         
         displayValue = brain.result
+
+        descriptionLabel.text = brain.description
     }
 }
 
