@@ -25,7 +25,7 @@ class CalculatorBrain {
     private let dotdotdot: String = " ..."
 
     private let operations: Dictionary<String, Operation> = [
-        "π": Operation.Constant(M_PI),
+        "π": Operation.Constant(Double.pi),
         "e": Operation.Constant(M_E),
         "√": Operation.UnaryOperation(sqrt),
         "cos": Operation.UnaryOperation(cos),
@@ -75,7 +75,7 @@ class CalculatorBrain {
                 accumulator = value
                 lastOperation = .Constant
             case .UnaryOperation(let function):
-                wrapWithParens(symbol)
+                wrapWithParens(symbol: symbol)
                 accumulator = function(accumulator)
                 lastOperation = .UnaryOperation
             case .BinaryOperation(let function):
@@ -115,22 +115,22 @@ class CalculatorBrain {
     var description: String {
         get {
             if pending != nil {
-                return history.joinWithSeparator(" ") + dotdotdot
+                return history.joined(separator: " ") + dotdotdot
             }
 
-            return history.joinWithSeparator(" ")
+            return history.joined(separator: " ")
         }
     }
 
     private func wrapWithParens(symbol: String) {
         if lastOperation == .Equals {
-            history.insert(")", atIndex: history.count - 1)
-            history.insert(symbol, atIndex: 0)
-            history.insert("(", atIndex: 1)
+            history.insert(")", at: history.count - 1)
+            history.insert(symbol, at: 0)
+            history.insert("(", at: 1)
         } else {
-            history.insert(symbol, atIndex: history.count - 1)
-            history.insert("(", atIndex: history.count - 1)
-            history.insert(")", atIndex: history.count)
+            history.insert(symbol, at: history.count - 1)
+            history.insert("(", at: history.count - 1)
+            history.insert(")", at: history.count)
         }
     }
 

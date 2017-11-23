@@ -10,29 +10,37 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
     @IBOutlet private weak var display: UILabel!
-    
     @IBOutlet private weak var descriptionLabel: UILabel!
-
+    
+    private var brain = CalculatorBrain()
     private var userIsInTheMiddleOfTyping = false
     private let DECIMAL_CHAR = "."
     
-    @IBAction private func touchDigit(sender: UIButton) {
+    private var displayValue: Double {
+        get {
+            return Double(display.text!)!
+        }
+        
+        set {
+            display.text = String(newValue)
+        }
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+    }
+}
+
+// MARK: - IBActions
+extension ViewController {
+    
+    @IBAction private func touchDigit(_ sender: UIButton) {
         let digit = sender.currentTitle!
         
         if userIsInTheMiddleOfTyping {
             let textCurrentlyInDisplay = display.text!
-            if digit != DECIMAL_CHAR || display.text!.rangeOfString(DECIMAL_CHAR) == nil {
+            if digit != DECIMAL_CHAR || display.text!.range(of: DECIMAL_CHAR) == nil {
                 display.text = textCurrentlyInDisplay + digit
             }
         } else {
@@ -46,30 +54,17 @@ class ViewController: UIViewController {
         userIsInTheMiddleOfTyping = true
     }
     
-    private var displayValue: Double {
-        get {
-            return Double(display.text!)!
-        }
-        
-        set {
-            display.text = String(newValue)
-        }
-    }
-    
-    private var brain = CalculatorBrain()
-    
-    @IBAction private func performOperation(sender: UIButton) {
+    @IBAction private func performOperation(_ sender: UIButton) {
         if userIsInTheMiddleOfTyping {
-            brain.setOperand(displayValue)
+            brain.setOperand(operand: displayValue)
             userIsInTheMiddleOfTyping = false
         }
         
         if let mathOperation = sender.currentTitle {
-            brain.performOperand(mathOperation)
+            brain.performOperand(symbol: mathOperation)
         }
         
         displayValue = brain.result
-
         descriptionLabel.text = brain.description
     }
 }
